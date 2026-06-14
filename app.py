@@ -7,77 +7,132 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from prophet import Prophet
 
-st.set_page_config(page_title="Retail OS", layout="wide")
+st.set_page_config(page_title="Retail OS", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 html, body, [class*="css"] {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: rgb(0, 0, 0);
     color: rgb(245, 245, 247);
 }
 
 [data-testid="stSidebar"] {
-    background-color: rgba(28, 28, 30, 0.5);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgb(0, 0, 0);
+    border-right: 1px solid rgb(51, 51, 51);
+}
+
+header {
+    visibility: hidden;
 }
 
 .glass-card {
-    background: rgba(44, 44, 46, 0.4);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    padding: 28px;
+    background-color: rgb(28, 28, 30);
+    border: 1px solid rgb(51, 51, 51);
+    border-radius: 12px;
+    padding: 24px;
     margin-bottom: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .glass-card:hover {
-    transform: translateY(-3px);
-    background: rgba(58, 58, 60, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-color: rgb(72, 72, 74);
 }
 
 .metric-value {
-    font-size: 46px;
+    font-size: 42px;
     font-weight: 500;
     letter-spacing: -1px;
-    background: linear-gradient(135deg, rgb(10, 132, 255), rgb(94, 92, 230));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: rgb(255, 255, 255);
 }
 
 .metric-label {
-    font-size: 14px;
+    font-size: 13px;
     color: rgb(142, 142, 147);
     text-transform: uppercase;
-    letter-spacing: 1.2px;
-    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-weight: 500;
     margin-bottom: 8px;
+}
+
+.stTextInput input, .stFileUploader {
+    background-color: rgb(28, 28, 30) !important;
+    border: 1px solid rgb(51, 51, 51) !important;
+    color: rgb(255, 255, 255) !important;
+    border-radius: 8px !important;
+}
+
+.stButton button {
+    background-color: rgb(255, 255, 255) !important;
+    color: rgb(0, 0, 0) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: opacity 0.2s;
+}
+
+.stButton button:hover {
+    opacity: 0.8;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center; font-size: 56px; font-weight: 600; letter-spacing: -2px; margin-bottom: 5px; background: linear-gradient(90deg, rgb(255,255,255), rgb(150,150,150)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>Retail Intelligence OS</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: rgb(142, 142, 147); font-size: 20px; font-weight: 300; margin-bottom: 60px;'>Enterprise Analytics Environment</p>", unsafe_allow_html=True)
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
 
+if not st.session_state["authenticated"]:
+    st.markdown("""
+    <style>
+    [data-testid="collapsedControl"] { display: none; }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; font-size: 48px; font-weight: 600; letter-spacing: -1.5px;'>Retail OS</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: rgb(142, 142, 147); margin-bottom: 40px;'>Sign in to access enterprise analytics.</p>", unsafe_allow_html=True)
+        
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("Authenticate", use_container_width=True)
+            
+            if submit:
+                if username == "admin" and password == "admin":
+                    st.session_state["authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials. Default is admin/admin")
+    st.stop()
+
+st.markdown("""
+<style>
+[data-testid="collapsedControl"] { display: block; }
+</style>
+""", unsafe_allow_html=True)
+
+st.sidebar.markdown("<h3 style='font-weight: 600; letter-spacing: -0.5px; margin-bottom: 20px;'>Navigation</h3>", unsafe_allow_html=True)
 page = st.sidebar.radio(
-    "Navigation",
+    "",
     ["Executive Overview", "Sales Analytics", "Customer Hub", "Demand Explorer", "Churn Risk", "Inventory Health"]
 )
 
+st.sidebar.markdown("<br><br>", unsafe_allow_html=True)
+if st.sidebar.button("Secure Logout"):
+    st.session_state["authenticated"] = False
+    st.rerun()
+
+st.markdown("<h1 style='font-size: 44px; font-weight: 600; letter-spacing: -1.5px; margin-bottom: 40px;'>Retail Intelligence OS</h1>", unsafe_allow_html=True)
+
 if page == "Executive Overview":
-    st.markdown("<h2 style='font-weight: 500; letter-spacing: -0.5px;'>System Initialization</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='font-weight: 500; font-size: 24px;'>System Initialization</h2>", unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Mount structured dataset payload", type=["csv", "xlsx"])
 
     if uploaded_file:
-        with st.spinner("Authenticating and parsing data structures..."):
+        with st.spinner("Authenticating data structures..."):
             try:
                 if uploaded_file.name.endswith("csv"):
                     df = pd.read_csv(uploaded_file)
@@ -111,8 +166,6 @@ if "data" in st.session_state:
     df = st.session_state["data"]
 
     if page == "Sales Analytics":
-        st.markdown("<h2 style='font-weight: 500; letter-spacing: -0.5px;'>Sales Engine Diagnostics</h2>", unsafe_allow_html=True)
-        
         c1, c2, c3 = st.columns(3)
         
         total_rev = df["TotalPrice"].sum()
@@ -123,13 +176,11 @@ if "data" in st.session_state:
         c2.markdown(f"<div class='glass-card'><div class='metric-label'>Total Transactions</div><div class='metric-value'>{total_orders:,}</div></div>", unsafe_allow_html=True)
         c3.markdown(f"<div class='glass-card'><div class='metric-label'>Active Cohorts</div><div class='metric-value'>{total_cust:,}</div></div>", unsafe_allow_html=True)
 
-        st.markdown("<h3 style='margin-top: 30px; font-weight: 500;'>Revenue Trajectory</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='margin-top: 30px; font-weight: 500; font-size: 20px;'>Revenue Trajectory</h3>", unsafe_allow_html=True)
         daily_trend = df.groupby(df["InvoiceDate"].dt.date)["TotalPrice"].sum()
         st.line_chart(daily_trend, use_container_width=True)
 
     if page == "Customer Hub":
-        st.markdown("<h2 style='font-weight: 500; letter-spacing: -0.5px;'>Algorithmic Customer Clustering</h2>", unsafe_allow_html=True)
-        
         try:
             snapshot_date = df["InvoiceDate"].max() + pd.Timedelta(days=1)
             rfm = df.groupby("CustomerID").agg({
@@ -147,19 +198,17 @@ if "data" in st.session_state:
             c1.dataframe(rfm.head(15))
             
             with c2:
-                sns.set_theme(style="darkgrid", rc={"axes.facecolor":"rgb(28,28,30)", "figure.facecolor":"rgb(0,0,0)", "text.color":"rgb(245,245,247)"})
+                sns.set_theme(style="darkgrid", rc={"axes.facecolor":"rgb(28,28,30)", "figure.facecolor":"rgb(0,0,0)", "text.color":"rgb(245,245,247)", "grid.color": "rgb(51,51,51)"})
                 fig, ax = plt.subplots(figsize=(8, 5))
-                sns.scatterplot(data=rfm, x="Recency", y="Monetary", hue="Cluster", palette="cool", alpha=0.9, ax=ax)
+                sns.scatterplot(data=rfm, x="Recency", y="Monetary", hue="Cluster", palette="light:w_r", alpha=0.9, ax=ax, legend=False)
                 ax.xaxis.label.set_color("white")
                 ax.yaxis.label.set_color("white")
                 ax.tick_params(colors="white")
                 st.pyplot(fig)
         except Exception as e:
-            st.error("Insufficient variance to process clustering. Require larger dataset.")
+            st.error("Insufficient variance to process clustering.")
 
     if page == "Demand Explorer":
-        st.markdown("<h2 style='font-weight: 500; letter-spacing: -0.5px;'>Predictive Demand Models</h2>", unsafe_allow_html=True)
-        
         with st.spinner("Calibrating time-series models..."):
             try:
                 daily_sales = df.groupby(df["InvoiceDate"].dt.date)["TotalPrice"].sum().reset_index()
@@ -173,11 +222,9 @@ if "data" in st.session_state:
                 forecast_display = forecast[["ds", "yhat"]].tail(30).set_index("ds")
                 st.area_chart(forecast_display)
             except Exception as e:
-                st.error("Time-series continuity broken. Verify timestamp integrity.")
+                st.error("Time-series continuity broken.")
 
     if page == "Churn Risk":
-        st.markdown("<h2 style='font-weight: 500; letter-spacing: -0.5px;'>Attrition Identification Radar</h2>", unsafe_allow_html=True)
-        
         snapshot_date = df["InvoiceDate"].max() + pd.Timedelta(days=1)
         last_purchase = df.groupby("CustomerID")["InvoiceDate"].max()
         
@@ -191,8 +238,6 @@ if "data" in st.session_state:
         c2.dataframe(churn_df[churn_df["Status"] == "At Risk"].sort_values("Days_Inactive", ascending=False).head(20))
 
     if page == "Inventory Health":
-        st.markdown("<h2 style='font-weight: 500; letter-spacing: -0.5px;'>Automated Inventory Logistics</h2>", unsafe_allow_html=True)
-        
         with st.spinner("Calculating optimal capital deployment..."):
             try:
                 daily_sales = df.groupby(df["InvoiceDate"].dt.date)["TotalPrice"].sum().reset_index()
@@ -206,7 +251,6 @@ if "data" in st.session_state:
                 projected_value = forecast["yhat"].tail(30).sum()
                 
                 st.markdown(f"<div class='glass-card'><div class='metric-label'>Recommended 30-Day Restock Capital</div><div class='metric-value'>₹{projected_value:,.0f}</div></div>", unsafe_allow_html=True)
-                
-                st.info("Logistics model advises securing capital matching the projected demand to prevent out-of-stock scenarios.")
+                st.info("Logistics model advises securing capital matching the projected demand.")
             except Exception as e:
-                st.error("Logistics model offline. Require stable demand history.")
+                st.error("Logistics model offline.")
